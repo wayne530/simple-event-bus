@@ -16,22 +16,30 @@ function SimpleEventBus() {
         }
     };
 
-    this.on = function(eventName, callback) {
-        if (! (eventName in this.onListeners)) {
-            this.onListeners[eventName] = [];
-        }
-        this.onListeners[eventName].push(callback);
+    this.on = function(eventNameOrNames, callback) {
+        const eventNames = typeof(eventNameOrNames) === 'string' ? [eventNameOrNames] : eventNameOrNames;
+        eventNames.forEach(eventName => {
+            if (! (eventName in this.onListeners)) {
+                this.onListeners[eventName] = [];
+            }
+            this.onListeners[eventName].push(callback);
+        });
     };
 
     this.onAll = function(callback) {
         this.onAllListeners.push(callback);
     };
 
-    this.onMatch = function(eventNamePattern, callback) {
-        if (! (eventNamePattern in this.onMatchListeners)) {
-            this.onMatchListeners[eventNamePattern] = [];
-        }
-        this.onMatchListeners[eventNamePattern].push(callback);
+    this.onMatch = function(eventNamePatternOrPatterns, callback) {
+        const eventNamePatterns = typeof(eventNamePatternOrPatterns) === 'string' ?
+            [eventNamePatternOrPatterns] :
+            eventNamePatternOrPatterns;
+        eventNamePatterns.forEach(eventNamePattern => {
+            if (! (eventNamePattern in this.onMatchListeners)) {
+                this.onMatchListeners[eventNamePattern] = [];
+            }
+            this.onMatchListeners[eventNamePattern].push(callback);
+        });
     };
 
     this.trigger = async function(eventName, eventProperties, context) {
