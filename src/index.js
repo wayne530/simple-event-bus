@@ -1,3 +1,5 @@
+const allSettled = require('promise.allsettled');
+
 function SimpleEventBus() {
     this.debug = false;
     this.onListeners = {};
@@ -32,7 +34,7 @@ function SimpleEventBus() {
         this.onMatchListeners[eventNamePattern].push(callback);
     };
 
-    this.trigger = function(eventName, eventProperties, context) {
+    this.trigger = async function(eventName, eventProperties, context) {
         eventProperties = eventProperties || {};
         context = context || {};
         let callbacks = [];
@@ -59,18 +61,34 @@ function SimpleEventBus() {
             }
         });
 
+        let callbackPromises = [];
         callbacks.forEach((callback) => {
             try {
-                callback.call(callbackContext, eventName, eventProperties, context);
+                if (callback.constructor.name === 'AsyncFunction') {
+                    const promise = callback.call(callbackContext, eventName, eventProperties, context);
+                    callbackPromises.push(promise);
+                } else {
+                    callback.call(callbackContext, eventName, eventProperties, context);
+                }
             } catch (error) {
                 this.log(`Callback triggered exception: ${error.toString()}`);
                 this.log(error);
             }
         });
-        this.log(`${deferredTriggers.length} total deferred triggers from callbacks`);
+        return allSettled(callbackPromises).then(results => {
+            results.forEach(result => {
+                if (result.status !== 'fulfilled') {
+                    this.log(`Callback triggered exception: ${result.reason.toString()}`);
+                    this.log(result.reason);
+                }
+            });
+        }).then(() => {
+            this.log(`${deferredTriggers.length} total deferred triggers from callbacks`);
+            deferredTriggers.forEach(async (trigger) => {
+                await this.trigger(trigger.eventName, trigger.eventProperties, trigger.context);
+            });
 
-        deferredTriggers.forEach((trigger) => {
-            this.trigger(trigger.eventName, trigger.eventProperties, trigger.context);
+            return true;
         });
     };
 }
