@@ -51,7 +51,7 @@ eventBus.setDebug(true); // enable debugging output (defaults to false)
 eventBus.on('SomeOtherEvent', function(eventName) {
     console.log(`SomeOtherEvent was triggered!`);
 });
-eventBus.on('SomeEvent', function(eventName, eventProperties, context) {
+eventBus.on('SomeEvent', function(eventName, eventProperties) {
     console.log(`I received event ${eventName} with properties: ${JSON.stringify(eventProperties)`);
     this.trigger('SomeOtherEvent');
     console.log(`${this.baz} <- should print: some value`);
@@ -118,5 +118,13 @@ to make it case-insensitive.
 ```javascript
 eventBus.onMatch('^User', function(eventName, eventProperties) {
     console.log(`${eventName} triggered: I match all events beginning with User`);
+});
+```
+
+As with `on`, you may provide a single regular expression or multiple, by passing in an array of patterns.
+
+```javascript
+eventBus.onMatch(['^User', 'Created$'], function(eventName, eventProperties) {
+    console.log(`${eventName} triggered: I match all events beginning with User or ending with Created`);
 });
 ```
