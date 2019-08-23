@@ -1,7 +1,7 @@
 # simple-event-bus
 
 This is a very simple, pure Javascript (zero native dependencies) implementation of an event bus used to implement the
-publisher-subscriber pattern.
+publisher-subscriber pattern in NodeJS applications.
 
 ## Installation
 
