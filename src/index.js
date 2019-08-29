@@ -46,7 +46,7 @@ function SimpleEventBus() {
         eventProperties = eventProperties || {};
         context = context || {};
         let callbacks = [];
-        this.log(`${eventName} triggered with properties: ${JSON.stringify(eventProperties)}`);
+        this.log(`[${eventName}] triggered with properties: ${JSON.stringify(eventProperties)}`);
         if (eventName in this.onListeners) {
             callbacks = callbacks.concat(this.onListeners[eventName]);
         }
@@ -59,7 +59,7 @@ function SimpleEventBus() {
             }
         }
         callbacks = callbacks.concat(this.onAllListeners);
-        this.log(`${callbacks.length} total callbacks to call`);
+        this.log(`[${eventName}] ${callbacks.length} total callbacks to call`);
 
         // callback context
         let deferredTriggers = [];
@@ -79,19 +79,19 @@ function SimpleEventBus() {
                     callback.call(callbackContext, eventName, eventProperties, context);
                 }
             } catch (error) {
-                this.log(`Callback triggered exception: ${error.toString()}`);
+                this.log(`[${eventName}] Callback triggered exception: ${error.toString()}`);
                 this.log(error);
             }
         });
         return allSettled(callbackPromises).then(results => {
             results.forEach(result => {
                 if (result.status !== 'fulfilled') {
-                    this.log(`Callback triggered exception: ${result.reason.toString()}`);
+                    this.log(`[${eventName}] Callback triggered exception: ${result.reason.toString()}`);
                     this.log(result.reason);
                 }
             });
         }).then(() => {
-            this.log(`${deferredTriggers.length} total deferred triggers from callbacks`);
+            this.log(`[${eventName}] ${deferredTriggers.length} total deferred triggers from callbacks`);
             deferredTriggers.forEach(async (trigger) => {
                 await this.trigger(trigger.eventName, trigger.eventProperties, trigger.context);
             });
